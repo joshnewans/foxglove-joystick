@@ -1,5 +1,5 @@
 # joyPanel version history
 
-## 0.0.0
+## 0.0.1
 
-- Alpha testing
+- Initial release
