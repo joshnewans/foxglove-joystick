@@ -151,7 +151,7 @@ function JoyPanel({ context }: { context: PanelExtensionContext }): JSX.Element 
         frame_id: config.publishFrameId,
         stamp: fromDate(new Date()), // TODO: /clock
       },
-      axes: [...gp.axes],
+      axes: gp.axes.map((axis) => -axis),
       buttons: gp.buttons.map((button) => (button.pressed ? 1 : 0)),
     } as Joy;
 

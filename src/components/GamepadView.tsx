@@ -5,35 +5,9 @@ export function GamepadView(props: any) {
     [key: number]: number[];
   }
 
-  // console.log(mapping1);
 
   const buttonDisplayMapping: mappingType = mapping1["buttons"];
   const axisDisplayMapping: mappingType = mapping1["axes"];
-
-  // const buttonDisplayMapping: mappingType = {
-  //   0: [397, 276],
-  //   1: [430, 242],
-  //   3: [363, 242],
-  //   4: [397, 210],
-  //   6: [121, 131],
-  //   7: [393, 131],
-  //   8: [121, 97],
-  //   9: [393, 97],
-  //   10: [211, 242],
-  //   11: [302, 242],
-  //   13: [184, 377],
-  //   14: [329, 377],
-  // };
-  // const axisDisplayMapping: mappingType = {
-  //   0: [184, 308],
-  //   1: [184, 308, 90],
-  //   2: [329, 308],
-  //   3: [329, 308, 90],
-  //   4: [395, 60],
-  //   5: [119, 60],
-  //   6: [117, 243],
-  //   7: [117, 243, 90],
-  // };
 
   const buttons = props.joy
     ? props.joy.buttons.map((item: number, index: number) => {
@@ -86,7 +60,7 @@ export function GamepadView(props: any) {
 
         const width = 80;
         const height = 10;
-        const fracwidth = ((item + 1) * width) / 2;
+        const fracwidth = ((-item + 1) * width) / 2;
         const cx = cc ? (cc[0] ? cc[0] : -100) : -100;
         const cy = cc ? (cc[1] ? cc[1] : -100) : -100;
         const rot = cc ? (cc[2] ? cc[2] : 0) : 0;
