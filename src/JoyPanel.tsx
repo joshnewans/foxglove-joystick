@@ -16,6 +16,7 @@ import { SimpleButtonView } from "./components/SimpleButtonView";
 import { Config, buildSettingsTree, settingsActionReducer } from "./panelSettings";
 import { Joy } from "./types";
 
+import displaymapping1 from "./components/display-mappings/displaymapping1.json";
 // Should this be exported by react-gamepads?
 interface GamepadRef {
   [key: number]: Gamepad;
@@ -151,8 +152,8 @@ function JoyPanel({ context }: { context: PanelExtensionContext }): JSX.Element 
         frame_id: config.publishFrameId,
         stamp: fromDate(new Date()), // TODO: /clock
       },
-      axes: gp.axes.map((axis) => -axis),
-      buttons: gp.buttons.map((button) => (button.pressed ? 1 : 0)),
+      axes: gp.axes.map((axis: any) => -axis),
+      buttons: gp.buttons.map((button: any) => (button.pressed ? 1 : 0)),
     } as Joy;
 
     setJoy(tmpJoy);
@@ -197,7 +198,9 @@ function JoyPanel({ context }: { context: PanelExtensionContext }): JSX.Element 
   return (
     <div>
       {config.displayMode === "auto" ? <SimpleButtonView joy={joy} /> : null}
-      {config.displayMode === "custom" ? <GamepadView joy={joy} /> : null}
+      {config.displayMode === "custom" ? (
+        <GamepadView joy={joy} displayMapping={displaymapping1} />
+      ) : null}
       {config.debugGamepad ? <GamepadDebug gamepads={gamepads} /> : null}
     </div>
   );

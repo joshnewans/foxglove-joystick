@@ -47,6 +47,8 @@ It is intended that there will be three different kinds of mapping, so it is wor
 | Joy -> Gamepad (named) | Likewise, two different platforms may have a different mapping for which button is which. For example, this might be to map  Joy button 10 to gamepad "R2". | No concept of a named mapping, it is a direct numerical map.
 | Gamepad (named) -> Display | How a given gamepad is rendered. | A structure (saved in JSON) that determines the position and orientation of each button/axis |
 
+Also note that the HTML gamepad API seems to have the axes reversed compared to what typically comes out of the `joy` drivers, so the panel flips those values back automatically.
+
 ## Contributions
 
 Thanks to [rgov](https://github.com/rgov) for creating [this repo](https://github.com/ARMADAMarineRobotics/studio-extension-gamepad) which I originally worked on this project from before rewriting it mostly from scratch.

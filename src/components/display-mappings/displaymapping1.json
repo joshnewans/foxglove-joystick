@@ -1,0 +1,124 @@
+[
+    {
+        "type": "button",
+        "text": "A",
+        "x": 397,
+        "y": 276,
+        "rot": 0,
+        "button": 0
+    },
+    {
+        "type": "button",
+        "text": "B",
+        "x": 430,
+        "y": 242,
+        "rot": 0,
+        "button": 1
+    },
+    {
+        "type": "button",
+        "text": "X",
+        "x": 363,
+        "y": 242,
+        "rot": 0,
+        "button": 3
+    },
+    {
+        "type": "button",
+        "text": "Y",
+        "x": 397,
+        "y": 210,
+        "rot": 0,
+        "button": 4
+    },
+    {
+        "type": "button",
+        "text": "L1",
+        "x": 121,
+        "y": 131,
+        "rot": 0,
+        "button": 6
+    },
+    {
+        "type": "button",
+        "text": "R1",
+        "x": 393,
+        "y": 131,
+        "rot": 0,
+        "button": 7
+    },
+    {
+        "type": "button",
+        "text": "L2",
+        "x": 121,
+        "y": 97,
+        "rot": 0,
+        "button": 8
+    },
+    {
+        "type": "button",
+        "text": "R2",
+        "x": 393,
+        "y": 97,
+        "rot": 0,
+        "button": 9
+    },
+    {
+        "type": "button",
+        "text": "Sel",
+        "x": 211,
+        "y": 242,
+        "rot": 0,
+        "button": 10
+    },
+    {
+        "type": "button",
+        "text": "Sta",
+        "x": 302,
+        "y": 242,
+        "rot": 0,
+        "button": 11
+    },
+    {
+        "type": "bar",
+        "axis": 4,
+        "x": 395,
+        "y": 60,
+        "rot": 0
+    },
+    {
+        "type": "bar",
+        "axis": 5,
+        "x": 119,
+        "y": 60,
+        "rot": 0
+    },
+    {
+        "type": "stick",
+        "axisX": 0,
+        "axisY": 1,
+        "button": 13,
+        "x": 184,
+        "y": 308
+    },
+    {
+        "type": "stick",
+        "axisX": 2,
+        "axisY": 3,
+        "button": 14,
+        "x": 329,
+        "y": 308
+    },
+    {
+        "type": "d-pad",
+        "axisX": 6,
+        "axisY": 7,
+        "x": 117,
+        "y": 243
+    }
+]
+
+
+
+
+
