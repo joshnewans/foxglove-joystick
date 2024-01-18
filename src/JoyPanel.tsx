@@ -16,11 +16,22 @@ import { SimpleButtonView } from "./components/SimpleButtonView";
 import { Config, buildSettingsTree, settingsActionReducer } from "./panelSettings";
 import { Joy } from "./types";
 
+import kbmapping1 from "./components/kbmapping1.json";
 import displaymapping1 from "./components/display-mappings/displaymapping1.json";
+import { FormGroup, FormControlLabel, Switch } from "@mui/material";
+
+
 // Should this be exported by react-gamepads?
 interface GamepadRef {
   [key: number]: Gamepad;
 }
+
+type KbMap = {
+  button: number;
+  axis: number;
+  direction: number;
+  value: number;
+};
 
 function JoyPanel({ context }: { context: PanelExtensionContext }): JSX.Element {
   const [topics, setTopics] = useState<undefined | Immutable<Topic[]>>();
@@ -28,6 +39,22 @@ function JoyPanel({ context }: { context: PanelExtensionContext }): JSX.Element 
   const [joy, setJoy] = useState<Joy | undefined>();
   const [gamepads, setGamepads] = useState<GamepadRef | undefined>({}); // TODO make this a GamepadRef
   const [pubTopic, setPubTopic] = useState<string | undefined>();
+  const [kbEnabled, setKbEnabled] = useState<boolean>(true);
+  const [trackedKeys, setTrackedKeys] = useState<Map<string, KbMap> | undefined>(() => {
+    const keyMap = new Map<string, KbMap>();
+
+    for (const [key, value] of Object.entries(kbmapping1)) {
+      const k: KbMap = {
+        button: value.button,
+        axis: value.axis,
+        direction: value.direction === "+" ? 1 : 0,
+        value: 0,
+      };
+      console.log(value);
+      keyMap.set(key, k);
+    }
+    return keyMap;
+  });
 
   const [renderDone, setRenderDone] = useState<(() => void) | undefined>();
 
@@ -123,12 +150,11 @@ function JoyPanel({ context }: { context: PanelExtensionContext }): JSX.Element 
         buttons: Array.from(latestJoy.buttons),
       };
       setJoy(tmpMsg);
-      // console.log("subbbb");
     }
   }, [messages, config.publishFrameId]);
 
-  useGamepads((gamepads) => {
-    setGamepads(gamepads);
+  useGamepads((gamepads2) => {
+    setGamepads(gamepads2);
   });
 
   useEffect(() => {
@@ -158,6 +184,90 @@ function JoyPanel({ context }: { context: PanelExtensionContext }): JSX.Element 
 
     setJoy(tmpJoy);
   }, [gamepads, config.publishFrameId, config.dataSource, config.gamepadId, context]);
+
+  // Keyboard mode
+
+  const handleKeyDown = useCallback((event: KeyboardEvent) => {
+    setTrackedKeys((oldTrackedKeys) => {
+      if (oldTrackedKeys && oldTrackedKeys.has(event.key)) {
+        const newKeys = new Map(oldTrackedKeys);
+        const k = newKeys.get(event.key);
+        if (k) {
+          k.value = 1;
+        }
+        return newKeys;
+      }
+      return oldTrackedKeys;
+    });
+  }, []);
+
+  const handleKeyUp = useCallback((event: KeyboardEvent) => {
+    setTrackedKeys((oldTrackedKeys) => {
+      if (oldTrackedKeys && oldTrackedKeys.has(event.key)) {
+        const newKeys = new Map(oldTrackedKeys);
+        const k = newKeys.get(event.key);
+        if (k) {
+          k.value = 0;
+        }
+        return newKeys;
+      }
+      return oldTrackedKeys;
+    });
+  }, []);
+
+  // Key down Listener
+  useEffect(() => {
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [handleKeyDown]);
+
+  // Key up Listener
+  useEffect(() => {
+    document.addEventListener("keyup", handleKeyUp);
+    return () => {
+      document.removeEventListener("keyup", handleKeyUp);
+    };
+  }, [handleKeyUp]);
+
+  // Generate Joy from Keys
+  useEffect(() => {
+    if (config.dataSource !== "keyboard") {
+      return;
+    }
+    if (!kbEnabled) {
+      return;
+    }
+
+    const axes: number[] = [];
+    const buttons: number[] = [];
+
+    trackedKeys?.forEach((value) => {
+      if (value.button >= 0) {
+        while (buttons.length <= value.button) {
+          buttons.push(0);
+        }
+        buttons[value.button] = value.value;
+      } else if (value.axis >= 0) {
+        while (axes.length <= value.axis) {
+          axes.push(0);
+        }
+        axes[value.axis] += (value.direction > 0 ? 1 : -1) * value.value;
+      }
+    });
+
+    const tmpJoy = {
+      header: {
+        frame_id: config.publishFrameId,
+        stamp: fromDate(new Date()), // TODO: /clock
+      },
+      axes,
+      buttons,
+    } as Joy;
+
+    setJoy(tmpJoy);
+  }, [config.dataSource, trackedKeys, config.publishFrameId, kbEnabled]);
 
   // Advertise the topic to publish
   useEffect(() => {
@@ -195,8 +305,32 @@ function JoyPanel({ context }: { context: PanelExtensionContext }): JSX.Element 
     renderDone?.();
   }, [renderDone]);
 
+  const handleKbSwitch = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setKbEnabled(event.target.checked);
+
+    // TODO Clear key values when disabled
+    // setTrackedKeys((oldTrackedKeys) => {
+    //   const newKeys = new Map(oldTrackedKeys);
+    //   newKeys.forEach((value, key, map) => {
+    //     const k = map.get(key);
+    //     if (k) {
+    //       k.value = 0;
+    //     }
+    //   });
+    //   return newKeys;
+    // });
+  };
+
   return (
     <div>
+      {config.dataSource === "keyboard" ? (
+        <FormGroup>
+          <FormControlLabel
+            control={<Switch checked={kbEnabled} onChange={handleKbSwitch} />}
+            label="Enable Keyboard"
+          />
+        </FormGroup>
+      ) : null}
       {config.displayMode === "auto" ? <SimpleButtonView joy={joy} /> : null}
       {config.displayMode === "custom" ? (
         <GamepadView joy={joy} displayMapping={displaymapping1} />

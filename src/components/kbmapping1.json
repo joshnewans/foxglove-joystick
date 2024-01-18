@@ -1,0 +1,56 @@
+{
+    "l": {
+        "button": 1,
+        "toggle": false,
+        "axis": -1,
+        "direction": null
+    },
+    "k": {
+        "button": 0,
+        "toggle": false,
+        "axis": -1,
+        "direction": null
+    },
+    "j": {
+        "button": 3,
+        "toggle": false,
+        "axis": -1,
+        "direction": null
+    },
+    "i": {
+        "button": 4,
+        "toggle": false,
+        "axis": -1,
+        "direction": null
+    },
+    " ": {
+        "button": 6,
+        "toggle": false,
+        "axis": -1,
+        "direction": null
+    },
+    "w": {
+        "axis": 1,
+        "direction": "+",
+        "button": -1,
+        "toggle": null
+    },
+    "s": {
+        "axis": 1,
+        "direction": "-",
+        "button": -1,
+        "toggle": null
+    },
+    "a": {
+        "axis": 0,
+        "direction": "+",
+        "button": -1,
+        "toggle": null
+    },
+    "d": {
+        "axis": 0,
+        "direction": "-",
+        "button": -1,
+        "toggle": null
+    }
+}

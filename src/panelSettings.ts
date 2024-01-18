@@ -44,7 +44,7 @@ export function buildSettingsTree(config: Config, topics?: readonly Topic[]): Se
           value: "interactive",
         },
         {
-          label: "(WIP) Keyboard",
+          label: "Keyboard",
           value: "keyboard",
         },
       ],
