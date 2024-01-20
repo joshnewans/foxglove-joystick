@@ -321,6 +321,25 @@ function JoyPanel({ context }: { context: PanelExtensionContext }): JSX.Element 
     // });
   };
 
+  const interactiveCb = useCallback(
+    (interactiveJoy: Joy) => {
+      if (config.dataSource !== "interactive") {
+        return;
+      }
+      const tmpJoy = {
+        header: {
+          frame_id: config.publishFrameId,
+          stamp: fromDate(new Date()), // TODO: /clock
+        },
+        axes: interactiveJoy.axes,
+        buttons: interactiveJoy.buttons,
+      } as Joy;
+
+      setJoy(tmpJoy);
+    },
+    [config.publishFrameId, config.dataSource, setJoy],
+  );
+
   return (
     <div>
       {config.dataSource === "keyboard" ? (
@@ -333,7 +352,7 @@ function JoyPanel({ context }: { context: PanelExtensionContext }): JSX.Element 
       ) : null}
       {config.displayMode === "auto" ? <SimpleButtonView joy={joy} /> : null}
       {config.displayMode === "custom" ? (
-        <GamepadView joy={joy} displayMapping={displaymapping1} />
+        <GamepadView joy={joy} displayMapping={displaymapping1} cbInteractChange={interactiveCb} />
       ) : null}
       {config.debugGamepad ? <GamepadDebug gamepads={gamepads} /> : null}
     </div>

@@ -40,7 +40,7 @@ export function buildSettingsTree(config: Config, topics?: readonly Topic[]): Se
           value: "gamepad",
         },
         {
-          label: "(WIP) Interactive",
+          label: "Interactive",
           value: "interactive",
         },
         {
