@@ -17,23 +17,24 @@ There are four main operating modes/input sources/use cases:
 
 ## Installation
 With Node and Foxglove installed, `npm install`, `npm run local-install`.
+To package up `npm run package`.
 
 ## Planned functionality/improvements
 
 - **Source modes**
-  - [ ] Source Mode 2 (Gamepad)
+  - [x] Source Mode 1 (Subscriber)
+  - [x] Source Mode 2 (Gamepad)
     - [ ] Option for a custom mapping from gamepad to `Joy` (e.g. GP 6-> Joy 8)
     - [ ] Deadzones, inversion, scaling, etc.
-    - [ ] More efficient usage of `react-gamepads` (and/or replace with a custom equivalent)
-  - [ ] Source Mode 3 (Keyboard)
-  - [ ] Source Mode 4 (Interactive)
+  - [x] Source Mode 3 (Keyboard)
+  - [x] Source Mode 4 (Interactive)
 - **Display modes**
-  - [ ] Simple Auto-Generated Display
+  - [x] Simple Auto-Generated Display
     - [ ] Better identification of axes
-  - [ ] Gamepad visual mimic
+  - [x] Gamepad visual mimic
     - [ ] Different options for the image
     - [ ] Different options for mapping joy buttons to image buttons
-    - [ ] Options for axes to be sticks, d-pads, triggers, or more
+    - [x] Options for axes to be sticks, d-pads, triggers, or more
     - [ ] General improved customisability
 
 
@@ -51,4 +52,4 @@ Also note that the HTML gamepad API seems to have the axes reversed compared to 
 
 ## Contributions
 
-Thanks to [rgov](https://github.com/rgov) for creating [this repo](https://github.com/ARMADAMarineRobotics/studio-extension-gamepad) which I originally worked on this project from before rewriting it mostly from scratch.
+Thanks to [rgov](https://github.com/rgov) for creating [this repo](https://github.com/ARMADAMarineRobotics/studio-extension-gamepad) which I originally worked on this project from before rewriting it mostly from scratch (but have retained [useGamepads.ts](src/hooks/useGamepad.ts)).

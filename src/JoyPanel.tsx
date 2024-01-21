@@ -6,25 +6,18 @@ import {
   Topic,
   SettingsTreeAction,
 } from "@foxglove/studio";
-import { useEffect, useLayoutEffect, useState, useCallback } from "react";
+import { FormGroup, FormControlLabel, Switch } from "@mui/material";
+import { useEffect, useLayoutEffect, useState, useCallback, useRef } from "react";
 import ReactDOM from "react-dom";
-import { useGamepads } from "react-gamepads";
 
-import { GamepadDebug } from "./components/GamepadDebug";
+// import { GamepadDebug } from "./components/GamepadDebug";
 import { GamepadView } from "./components/GamepadView";
 import { SimpleButtonView } from "./components/SimpleButtonView";
+import displaymapping1 from "./components/display-mappings/displaymapping1.json";
+import kbmapping1 from "./components/kbmapping1.json";
+import { useGamepad } from "./hooks/useGamepad";
 import { Config, buildSettingsTree, settingsActionReducer } from "./panelSettings";
 import { Joy } from "./types";
-
-import kbmapping1 from "./components/kbmapping1.json";
-import displaymapping1 from "./components/display-mappings/displaymapping1.json";
-import { FormGroup, FormControlLabel, Switch } from "@mui/material";
-
-
-// Should this be exported by react-gamepads?
-interface GamepadRef {
-  [key: number]: Gamepad;
-}
 
 type KbMap = {
   button: number;
@@ -37,7 +30,6 @@ function JoyPanel({ context }: { context: PanelExtensionContext }): JSX.Element 
   const [topics, setTopics] = useState<undefined | Immutable<Topic[]>>();
   const [messages, setMessages] = useState<undefined | Immutable<MessageEvent[]>>();
   const [joy, setJoy] = useState<Joy | undefined>();
-  const [gamepads, setGamepads] = useState<GamepadRef | undefined>({}); // TODO make this a GamepadRef
   const [pubTopic, setPubTopic] = useState<string | undefined>();
   const [kbEnabled, setKbEnabled] = useState<boolean>(true);
   const [trackedKeys, setTrackedKeys] = useState<Map<string, KbMap> | undefined>(() => {
@@ -50,7 +42,6 @@ function JoyPanel({ context }: { context: PanelExtensionContext }): JSX.Element 
         direction: value.direction === "+" ? 1 : 0,
         value: 0,
       };
-      console.log(value);
       keyMap.set(key, k);
     }
     return keyMap;
@@ -127,8 +118,6 @@ function JoyPanel({ context }: { context: PanelExtensionContext }): JSX.Element 
   // Or subscribe to the relevant topic when in a recorded session
   useEffect(() => {
     if (config.dataSource === "sub-joy-topic") {
-      console.log("Subscribe to");
-      console.log(config.subJoyTopic);
       context.subscribe([config.subJoyTopic]);
     } else {
       context.unsubscribeAll();
@@ -138,7 +127,6 @@ function JoyPanel({ context }: { context: PanelExtensionContext }): JSX.Element 
   // If subscribing
   useEffect(() => {
     const latestJoy = messages?.[messages.length - 1]?.message as Joy | undefined;
-    // console.log("Here?");
     if (latestJoy) {
       const tmpHeader = {
         stamp: latestJoy.header.stamp,
@@ -153,37 +141,41 @@ function JoyPanel({ context }: { context: PanelExtensionContext }): JSX.Element 
     }
   }, [messages, config.publishFrameId]);
 
-  useGamepads((gamepads2) => {
-    setGamepads(gamepads2);
-  });
+  useGamepad({
+    didConnect: useCallback((gp: Gamepad) => {
+      // TODO update the gamepad ID list
+      console.log("Gamepad " + gp.index + " connected!")
+    }, []),
 
-  useEffect(() => {
-    if (config.dataSource !== "gamepad") {
-      return;
-    }
+    didDisconnect: useCallback((gp: Gamepad) => {
+      // TODO update the gamepad ID list
+      console.log("Gamepad " + gp.index + " discconnected!")
+    }, []),
 
-    // TODO can probably clean up these checks?
-    if (!gamepads) {
-      return;
-    }
+    didUpdate: useCallback(
+      (gp: Gamepad) => {
+        if (config.dataSource !== "gamepad") {
+          return;
+        }
 
-    const gp = gamepads[config.gamepadId];
+        if (config.gamepadId !== gp.index) {
+          return;
+        }
 
-    if (!gp) {
-      return;
-    }
+        const tmpJoy = {
+          header: {
+            frame_id: config.publishFrameId,
+            stamp: fromDate(new Date()), // TODO: /clock
+          },
+          axes: gp.axes.map((axis) => -axis),
+          buttons: gp.buttons.map((button) => (button.pressed ? 1 : 0)),
+        } as Joy;
 
-    const tmpJoy = {
-      header: {
-        frame_id: config.publishFrameId,
-        stamp: fromDate(new Date()), // TODO: /clock
+        setJoy(tmpJoy);
       },
-      axes: gp.axes.map((axis: any) => -axis),
-      buttons: gp.buttons.map((button: any) => (button.pressed ? 1 : 0)),
-    } as Joy;
-
-    setJoy(tmpJoy);
-  }, [gamepads, config.publishFrameId, config.dataSource, config.gamepadId, context]);
+      [config.dataSource, config.gamepadId, config.publishFrameId],
+    ),
+  });
 
   // Keyboard mode
 
@@ -354,7 +346,7 @@ function JoyPanel({ context }: { context: PanelExtensionContext }): JSX.Element 
       {config.displayMode === "custom" ? (
         <GamepadView joy={joy} displayMapping={displaymapping1} cbInteractChange={interactiveCb} />
       ) : null}
-      {config.debugGamepad ? <GamepadDebug gamepads={gamepads} /> : null}
+      {/* {config.debugGamepad ? <GamepadDebug gamepads={gamepads} /> : null} */}
     </div>
   );
 }

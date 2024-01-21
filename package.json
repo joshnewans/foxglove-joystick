@@ -47,7 +47,6 @@
     "@svgr/webpack": "^8.1.0",
     "@types/lodash-es": "^4.17.12",
     "immer": "^10.0.3",
-    "lodash-es": "^4.17.21",
-    "react-gamepads": "^1.0.0"
+    "lodash-es": "^4.17.21"
   }
 }
