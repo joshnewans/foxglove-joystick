@@ -29,3 +29,7 @@ jobs:
     - run: npm ci
     - run: npm run build --if-present
     - run: npm run package
+    - uses: actions/upload-artifact@v4
+      with:
+        name: joshnewans.joyPanel-0.0.1.foxe
+        path: joshnewans.joyPanel-0.0.1.foxe
