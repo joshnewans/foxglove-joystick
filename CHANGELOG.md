@@ -1,4 +1,8 @@
-# joyPanel version history
+# joy-panel version history
+
+## 0.0.3
+
+- Rename to `joy-panel`
 
 ## 0.0.2
 

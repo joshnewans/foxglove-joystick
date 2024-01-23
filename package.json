@@ -1,10 +1,10 @@
 {
-  "name": "joyPanel",
-  "displayName": "joyPanel",
+  "name": "joy-panel",
+  "displayName": "Joystick Panel",
   "description": "Foxglove panel extension for joystick/gamepad control.",
   "publisher": "Josh Newans",
   "homepage": "",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "license": "MIT",
   "main": "./dist/extension.js",
   "keywords": [],
