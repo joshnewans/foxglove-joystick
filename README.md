@@ -13,7 +13,7 @@ There are four main operating modes/input sources/use cases:
 | Keyboard Mode | Converts local keystrokes into `Joy` messages (for publishing) | Bench-testing a configuration that is primarily designed to use a gamepad but does not currently have one connected |
 | Interactive Display Mode | Makes the displayed indicators clickable/touchable (for publishing) | Controlling a robot from a touchscreen device |``
 
-![Panel Overview Screenshot](/docs/screenshot1.png)
+![Panel Overview Screenshot](https://github.com/joshnewans/foxglove-joystick/blob/main/docs/screenshot1.png?raw=true)
 
 ## Installation
 With Node and Foxglove installed, `npm install`, `npm run local-install`.
