@@ -9,15 +9,16 @@ There are four main operating modes/input sources/use cases:
 | Mode | Functionality | Intended use case |
 | ----- | ------ | ------ |
 | Subscribe Mode | Subscribes to an existing ROS `Joy` topic | Monitoring a robot that is being teleoperated, or replaying a log and reviewing operator actions |
-| Gamepad Mode | Receives input from a locally-connected gamepad (and publishes it to a ROS `Joy` topic) | Live control of a robot from any Foxglove-supported device |
-| Keyboard Mode *(future)* | Converts local keystrokes into `Joy` messages (for publishing) | Bench-testing a configuration that is primarily designed to use a gamepad but does not currently have one connected |
-| Interactive Display Mode *(future)* | Makes the displayed indicators clickable/touchable (for publishing) | Controlling a robot from a touchscreen device |``
+| Gamepad Mode | Receives input from a locally-connected gamepad (and publishes it to a ROS `Joy` topic) | Live control of a robot using a gamepad connected to any Foxglove-supported device |
+| Keyboard Mode | Converts local keystrokes into `Joy` messages (for publishing) | Bench-testing a configuration that is primarily designed to use a gamepad but does not currently have one connected |
+| Interactive Display Mode | Makes the displayed indicators clickable/touchable (for publishing) | Controlling a robot from a touchscreen device |``
 
 ![Panel Overview Screenshot](/docs/screenshot1.png)
 
 ## Installation
 With Node and Foxglove installed, `npm install`, `npm run local-install`.
-To package up `npm run package`.
+
+To package it up and create a `.foxe` file use `npm run package`.
 
 ## Planned functionality/improvements
 
