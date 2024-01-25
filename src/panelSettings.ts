@@ -11,7 +11,7 @@ export type Config = {
   publishFrameId: string;
   displayMode: string;
   debugGamepad: boolean;
-  theme: string;
+  themeName: string;
   mapping_name: string;
 };
 
@@ -137,15 +137,23 @@ export function buildSettingsTree(config: Config, topics?: readonly Topic[]): Se
         },
       ],
     },
-    theme: {
+    themeName: {
       label: "Theme",
       input: "select",
-      disabled: true, //config.displayMode === "auto",
-      value: config.theme,
+      disabled: config.displayMode === "auto",
+      value: config.themeName,
       options: [
         {
-          label: "Thing",
-          value: "thing",
+          label: "Steam Deck",
+          value: "steamdeck",
+        },
+        {
+          label: "iPega PG-9083s",
+          value: "ipega-9083s",
+        },
+        {
+          label: "Cheap Controller",
+          value: "cheapo",
         },
       ],
     },

@@ -13,7 +13,6 @@ import ReactDOM from "react-dom";
 // import { GamepadDebug } from "./components/GamepadDebug";
 import { GamepadView } from "./components/GamepadView";
 import { SimpleButtonView } from "./components/SimpleButtonView";
-import displaymapping1 from "./components/display-mappings/displaymapping1.json";
 import kbmapping1 from "./components/kbmapping1.json";
 import { useGamepad } from "./hooks/useGamepad";
 import { Config, buildSettingsTree, settingsActionReducer } from "./panelSettings";
@@ -58,7 +57,7 @@ function JoyPanel({ context }: { context: PanelExtensionContext }): JSX.Element 
     partialConfig.dataSource ??= "sub-joy-topic";
     partialConfig.displayMode ??= "auto";
     partialConfig.debugGamepad ??= false;
-    partialConfig.theme ??= "TODO";
+    partialConfig.themeName ??= "steamdeck";
     partialConfig.mapping_name ??= "TODO";
     partialConfig.gamepadId ??= 0;
     return partialConfig as Config;
@@ -344,7 +343,11 @@ function JoyPanel({ context }: { context: PanelExtensionContext }): JSX.Element 
       ) : null}
       {config.displayMode === "auto" ? <SimpleButtonView joy={joy} /> : null}
       {config.displayMode === "custom" ? (
-        <GamepadView joy={joy} displayMapping={displaymapping1} cbInteractChange={interactiveCb} />
+        <GamepadView
+          joy={joy}
+          cbInteractChange={interactiveCb}
+          themeName={config.themeName}
+        />
       ) : null}
       {/* {config.debugGamepad ? <GamepadDebug gamepads={gamepads} /> : null} */}
     </div>
