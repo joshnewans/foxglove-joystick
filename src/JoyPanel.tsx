@@ -127,12 +127,11 @@ function JoyPanel({ context }: { context: PanelExtensionContext }): JSX.Element 
   useEffect(() => {
     const latestJoy = messages?.[messages.length - 1]?.message as Joy | undefined;
     if (latestJoy) {
-      const tmpHeader = {
-        stamp: latestJoy.header.stamp,
-        frame_id: config.publishFrameId,
-      };
       const tmpMsg = {
-        header: tmpHeader,
+        header: {
+          stamp: latestJoy.header.stamp,
+          frame_id: config.publishFrameId,
+        },
         axes: Array.from(latestJoy.axes),
         buttons: Array.from(latestJoy.buttons),
       };
@@ -143,12 +142,12 @@ function JoyPanel({ context }: { context: PanelExtensionContext }): JSX.Element 
   useGamepad({
     didConnect: useCallback((gp: Gamepad) => {
       // TODO update the gamepad ID list
-      console.log("Gamepad " + gp.index + " connected!")
+      console.log("Gamepad " + gp.index + " connected!");
     }, []),
 
     didDisconnect: useCallback((gp: Gamepad) => {
       // TODO update the gamepad ID list
-      console.log("Gamepad " + gp.index + " discconnected!")
+      console.log("Gamepad " + gp.index + " discconnected!");
     }, []),
 
     didUpdate: useCallback(

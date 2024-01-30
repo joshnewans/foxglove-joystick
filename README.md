@@ -16,9 +16,50 @@ There are four main operating modes/input sources/use cases:
 ![Panel Overview Screenshot](https://github.com/joshnewans/foxglove-joystick/blob/main/docs/screenshot1.png?raw=true)
 
 ## Installation
-With Node and Foxglove installed, `npm install`, `npm run local-install`.
 
-To package it up and create a `.foxe` file use `npm run package`.
+### Foxglove Studio Extension Marketplace
+
+In the Foxglove Studio Desktop app, use the Extension Marketplace (Profile menu in top-right -> Extensions) to find and install the Joystick panel.
+
+### Releases
+
+Download the latest `.foxe` release [here](https://github.com/joshnewans/foxglove-joystick/releases/latest) and drag-and-drop it onto the window of Foxglove Studio (Desktop or Web).
+
+### Compile from source
+
+With Node and Foxglove installed
+ - `npm install` to install dependencies
+ - `npm run local-install` to build and install for a local copy of the Foxglove Studio Desktop App
+ - `npm run package` to package it up into a `.foxe` file
+
+### Snap Users
+
+Right now it seems that this panel will **not** work with the `snap` version of Foxglove Studio. Snaps do not allow joystick input by default and I am looking into what is required to use it (possibly the Foxglove team enabling the `joystick` interface). 
+
+### Steam Deck Users
+
+Please follow [this guide](docs/steamdeck.md).
+
+
+
+## Mapping
+
+Right now all "mapping" within the program is direct, but it is intended that there will be flexibility here. This is because different controllers (and in some cases the same controller on different platforms) will have the buttons/axes arranged in a different order. 
+
+Some more complex examples of this are D-Pads (sometimes register as two axes, sometimes four buttons) and triggers (sometimes register as axes + buttons, sometimes buttons with a variable value, unsupported by `Joy`).
+
+Thus it is expected to eventually need the following:
+
+| Mapping | Purpose | Current implementation |
+| ------- | ------- | ---------------------- |
+| Gamepad (numerical) -> Joy (or Keyboard -> Joy) | Defines how key pressed are mapped to `Joy` values (e.g. gamepad button 3 maps to joy button 4). | Direct mapping |
+| Joy -> Gamepad/Layout (named) | Defines how `Joy` values map into the Layout (e.g. joy button 4 maps to layout button "L1"). | Built into layout JSON (separate in future) |
+
+Also note that the HTML gamepad API seems to have the axes reversed compared to what typically comes out of the `joy` drivers, so the panel flips those values back automatically.
+
+## Layouts
+
+Currently consist of a `.json` to determine button locations and an entry in `GamepadBackground.tsx` for the background. Intention is for this to be more configurable in future.
 
 ## Planned functionality/improvements
 
@@ -39,17 +80,6 @@ To package it up and create a `.foxe` file use `npm run package`.
     - [ ] General improved customisability
 
 
-
-## Mapping
-It is intended that there will be three different kinds of mapping, so it is worth clarifying them here.
-
-| Mapping | Purpose | Current implementation |
-| ------- | ------- | ---------------------- |
-| Gamepad (numerical) -> Joy (or Keyboard -> Joy) | Defines how key pressed are mapped to `Joy` values (e.g. gamepad button 3 maps to joy button 4). This is useful because sometimes the default mapping for the same gamepad can differ on various platforms and needs to be standardised for the consumer of the `Joy` message. | Direct mapping |
-| Joy -> Gamepad (named) | Likewise, two different platforms may have a different mapping for which button is which. For example, this might be to map  Joy button 10 to gamepad "R2". | No concept of a named mapping, it is a direct numerical map.
-| Gamepad (named) -> Display | How a given gamepad is rendered. | A structure (saved in JSON) that determines the position and orientation of each button/axis |
-
-Also note that the HTML gamepad API seems to have the axes reversed compared to what typically comes out of the `joy` drivers, so the panel flips those values back automatically.
 
 ## Contributions
 
