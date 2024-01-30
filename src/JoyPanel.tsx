@@ -331,6 +331,10 @@ function JoyPanel({ context }: { context: PanelExtensionContext }): JSX.Element 
     [config.publishFrameId, config.dataSource, setJoy],
   );
 
+  useEffect(() => {
+    context.saveState(config);
+  }, [context, config]);
+
   return (
     <div>
       {config.dataSource === "keyboard" ? (
