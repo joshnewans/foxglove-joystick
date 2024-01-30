@@ -57,7 +57,7 @@ function JoyPanel({ context }: { context: PanelExtensionContext }): JSX.Element 
     partialConfig.dataSource ??= "sub-joy-topic";
     partialConfig.displayMode ??= "auto";
     partialConfig.debugGamepad ??= false;
-    partialConfig.themeName ??= "steamdeck";
+    partialConfig.layoutName ??= "steamdeck";
     partialConfig.mapping_name ??= "TODO";
     partialConfig.gamepadId ??= 0;
     return partialConfig as Config;
@@ -350,7 +350,7 @@ function JoyPanel({ context }: { context: PanelExtensionContext }): JSX.Element 
         <GamepadView
           joy={joy}
           cbInteractChange={interactiveCb}
-          themeName={config.themeName}
+          layoutName={config.layoutName}
         />
       ) : null}
       {/* {config.debugGamepad ? <GamepadDebug gamepads={gamepads} /> : null} */}

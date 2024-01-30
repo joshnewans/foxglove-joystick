@@ -11,7 +11,7 @@ export type Config = {
   publishFrameId: string;
   displayMode: string;
   debugGamepad: boolean;
-  themeName: string;
+  layoutName: string;
   mapping_name: string;
 };
 
@@ -137,11 +137,11 @@ export function buildSettingsTree(config: Config, topics?: readonly Topic[]): Se
         },
       ],
     },
-    themeName: {
-      label: "Theme",
+    layoutName: {
+      label: "Layout",
       input: "select",
       disabled: config.displayMode === "auto",
-      value: config.themeName,
+      value: config.layoutName,
       options: [
         {
           label: "Steam Deck",
@@ -152,24 +152,28 @@ export function buildSettingsTree(config: Config, topics?: readonly Topic[]): Se
           value: "ipega-9083s",
         },
         {
+          label: "Xbox",
+          value: "xbox",
+        },
+        {
           label: "Cheap Controller",
           value: "cheapo",
         },
       ],
     },
 
-    mapping: {
-      label: "Mapping",
-      input: "select",
-      value: config.mapping_name,
-      disabled: true, // config.displayMode === "auto",
-      options: [
-        {
-          label: "Custom",
-          value: "custom",
-        },
-      ],
-    },
+    // mapping: {
+    //   label: "Mapping",
+    //   input: "select",
+    //   value: config.mapping_name,
+    //   disabled: true, // config.displayMode === "auto",
+    //   options: [
+    //     {
+    //       label: "Custom",
+    //       value: "custom",
+    //     },
+    //   ],
+    // },
     debugGamepad: {
       label: "Debug Gamepad",
       input: "boolean",

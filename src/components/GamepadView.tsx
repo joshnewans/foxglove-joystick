@@ -4,6 +4,7 @@ import { GamepadBackground } from "./GamepadBackground";
 import cheapo from "./display-mappings/cheapo.json";
 import ipega9083s from "./display-mappings/ipega-9083s.json";
 import steamdeck from "./display-mappings/steamdeck.json";
+import xbox from "./display-mappings/xbox.json";
 import { Joy, ButtonConfig, BarConfig, StickConfig, DPadConfig, DisplayMapping } from "../types";
 
 const colStroke = "#ddd";
@@ -174,9 +175,9 @@ function generateDPad(valueX: number, valueY: number, x: number, y: number, radi
 export function GamepadView(props: {
   joy: Joy | undefined;
   cbInteractChange: (joy: Joy) => void;
-  themeName: string;
+  layoutName: string;
 }): React.ReactElement {
-  const { joy, cbInteractChange, themeName } = props;
+  const { joy, cbInteractChange, layoutName } = props;
   const dispItems = [];
 
   const [numButtons, setNumButtons] = useState<number>(0);
@@ -185,16 +186,18 @@ export function GamepadView(props: {
   const [displayMapping, setDisplayMapping] = useState<DisplayMapping>([]);
 
   useEffect(() => {
-    if (themeName === "steamdeck") {
+    if (layoutName === "steamdeck") {
       setDisplayMapping(steamdeck);
-    } else if (themeName === "ipega-9083s") {
+    } else if (layoutName === "ipega-9083s") {
       setDisplayMapping(ipega9083s);
-    } else if (themeName === "cheapo") {
+    } else if (layoutName === "xbox") {
+      setDisplayMapping(xbox);
+    } else if (layoutName === "cheapo") {
       setDisplayMapping(cheapo);
     } else {
       setDisplayMapping([]);
     }
-  }, [themeName]);
+  }, [layoutName]);
 
   // Prevent accidentally panning/zooming when touching the image
   const preventPan = useCallback((event: Event): void => {
@@ -450,7 +453,7 @@ export function GamepadView(props: {
     <div>
       {displayMapping.length === 0 ? <h2>No mapping!</h2> : null}
       <svg viewBox="0 0 512 512" className="preventPan">
-        <GamepadBackground themeName={themeName} />
+        <GamepadBackground layoutName={layoutName} />
         {dispItems}
       </svg>
     </div>
