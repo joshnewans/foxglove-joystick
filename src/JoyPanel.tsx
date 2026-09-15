@@ -25,6 +25,32 @@ type KbMap = {
   value: number;
 };
 
+function applyDeadzone(axes: number[], deadzone: number): number[] {
+  return axes.map((axis) => (Math.abs(axis) < deadzone ? 0.0 : axis));
+}
+
+function joysEqual(a: Joy, b: Joy, deadzone: number = 0.001): boolean {
+  if (a.axes.length !== b.axes.length || a.buttons.length !== b.buttons.length) {
+    return false;
+  }
+
+  // Compare axes with deadzone tolerance
+  for (let i = 0; i < a.axes.length; i++) {
+    if (Math.abs(a.axes[i]! - b.axes[i]!) > deadzone) {
+      return false;
+    }
+  }
+
+  // Compare buttons
+  for (let i = 0; i < a.buttons.length; i++) {
+    if (a.buttons[i] !== b.buttons[i]) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 function JoyPanel({ context }: { context: PanelExtensionContext }): JSX.Element {
   const [topics, setTopics] = useState<undefined | Immutable<Topic[]>>();
   const [messages, setMessages] = useState<undefined | Immutable<MessageEvent[]>>();
@@ -60,8 +86,104 @@ function JoyPanel({ context }: { context: PanelExtensionContext }): JSX.Element 
     partialConfig.layoutName ??= "steamdeck";
     partialConfig.mapping_name ??= "TODO";
     partialConfig.gamepadId ??= 0;
+    partialConfig.axisDeadzone ??= 0.05;
+    partialConfig.publishRate ??= 20;
     return partialConfig as Config;
   });
+
+  // Refs for direct publishing (bypass React state for low latency)
+  const lastPublishTime = useRef<number>(0);
+  const lastUIUpdateTime = useRef<number>(0);
+  const lastPublishedJoy = useRef<Joy | null>(null);
+  const publishContextRef = useRef(context);
+
+  // Update context ref when context changes
+  useEffect(() => {
+    publishContextRef.current = context;
+  }, [context]);
+
+  // Direct publish function (bypasses React state for minimal latency)
+  const publishJoy = useCallback(
+    (newJoy: Joy) => {
+      if (!config.publishMode || !pubTopic) {
+        return;
+      }
+
+      const now = performance.now();
+      const publishInterval = 1000 / config.publishRate;
+
+      // Throttle: check if enough time has passed
+      if (now - lastPublishTime.current < publishInterval) {
+        return;
+      }
+
+      // Change detection: skip if values haven't changed
+      if (lastPublishedJoy.current && joysEqual(newJoy, lastPublishedJoy.current, 0.001)) {
+        return;
+      }
+
+      // Publish directly
+      if (publishContextRef.current.publish) {
+        publishContextRef.current.publish(pubTopic, newJoy);
+        lastPublishTime.current = now;
+        lastPublishedJoy.current = newJoy;
+      }
+    },
+    [config.publishMode, config.publishRate, pubTopic],
+  );
+
+  // Heartbeat: repeat the last frame at publishRate while publish mode is on.
+  // Change-only publishing starves subscribers with a deadman (a robot stops
+  // 0.5 s after the last command even though the stick is still held).
+  useEffect(() => {
+    if (!config.publishMode || !pubTopic) {
+      return;
+    }
+    const interval = 1000 / config.publishRate;
+    const id = setInterval(() => {
+      const last = lastPublishedJoy.current;
+      const ctx = publishContextRef.current;
+      if (!last || !ctx.publish) {
+        return;
+      }
+      const now = performance.now();
+      // Only while live frames are absent (held stick = no change = no
+      // publish). Never touch lastPublishTime: the heartbeat must not win the
+      // throttle race against live frames (it did — the stick moved, the
+      // stream stayed frozen on the first frame).
+      if (now - lastPublishTime.current < interval * 1.5) {
+        return;
+      }
+      // Unfocused window: Chromium freezes gamepad state and rAF stalls, so
+      // the last frame would be replayed forever — send zeros instead (robot
+      // stops), keep the stream alive so the receiver's deadman is not the
+      // thing that saves us.
+      const header = { ...last.header, stamp: fromDate(new Date()) };
+      const frame = document.hasFocus()
+        ? ({ ...last, header } as Joy)
+        : ({
+            ...last,
+            header,
+            axes: last.axes.map(() => 0),
+            buttons: last.buttons.map(() => 0),
+          } as Joy);
+      ctx.publish(pubTopic, frame);
+    }, interval);
+    return () => {
+      clearInterval(id);
+    };
+  }, [config.publishMode, config.publishRate, pubTopic]);
+
+  // Throttled UI update (10 Hz, separate from publish rate)
+  const updateUI = useCallback((newJoy: Joy) => {
+    const now = performance.now();
+    const UI_UPDATE_INTERVAL = 100; // 10 Hz
+
+    if (now - lastUIUpdateTime.current >= UI_UPDATE_INTERVAL) {
+      setJoy(newJoy);
+      lastUIUpdateTime.current = now;
+    }
+  }, []);
 
   const settingsActionHandler = useCallback(
     (action: SettingsTreeAction) => {
@@ -156,7 +278,9 @@ function JoyPanel({ context }: { context: PanelExtensionContext }): JSX.Element 
           return;
         }
 
-        if (config.gamepadId !== gp.index) {
+        // The settings select stores the id as a string ("1"), gp.index is a
+        // number: a strict compare silently drops every frame of pad #1+.
+        if (Number(config.gamepadId) !== gp.index) {
           return;
         }
 
@@ -165,13 +289,27 @@ function JoyPanel({ context }: { context: PanelExtensionContext }): JSX.Element 
             frame_id: config.publishFrameId,
             stamp: fromDate(new Date()), // TODO: /clock
           },
-          axes: gp.axes.map((axis) => -axis),
+          axes: applyDeadzone(
+            gp.axes.map((axis) => -axis),
+            config.axisDeadzone,
+          ),
           buttons: gp.buttons.map((button) => (button.pressed ? 1 : 0)),
         } as Joy;
 
-        setJoy(tmpJoy);
+        // Direct publish (low latency path)
+        publishJoy(tmpJoy);
+
+        // Update UI (throttled to 10 Hz)
+        updateUI(tmpJoy);
       },
-      [config.dataSource, config.gamepadId, config.publishFrameId],
+      [
+        config.dataSource,
+        config.gamepadId,
+        config.publishFrameId,
+        config.axisDeadzone,
+        publishJoy,
+        updateUI,
+      ],
     ),
   });
 
@@ -252,12 +390,24 @@ function JoyPanel({ context }: { context: PanelExtensionContext }): JSX.Element 
         frame_id: config.publishFrameId,
         stamp: fromDate(new Date()), // TODO: /clock
       },
-      axes,
+      axes: applyDeadzone(axes, config.axisDeadzone),
       buttons,
     } as Joy;
 
-    setJoy(tmpJoy);
-  }, [config.dataSource, trackedKeys, config.publishFrameId, kbEnabled]);
+    // Direct publish (low latency path)
+    publishJoy(tmpJoy);
+
+    // Update UI (throttled to 10 Hz)
+    updateUI(tmpJoy);
+  }, [
+    config.dataSource,
+    trackedKeys,
+    config.publishFrameId,
+    kbEnabled,
+    config.axisDeadzone,
+    publishJoy,
+    updateUI,
+  ]);
 
   // Advertise the topic to publish
   useEffect(() => {
@@ -267,7 +417,16 @@ function JoyPanel({ context }: { context: PanelExtensionContext }): JSX.Element 
           if (oldTopic) {
             context.unadvertise?.(oldTopic);
           }
-          context.advertise?.(config.pubJoyTopic, "sensor_msgs/Joy");
+          // Detect ROS1 vs ROS2 schema naming
+          // ROS1: sensor_msgs/Joy, ROS2: sensor_msgs/msg/Joy
+          const schemaName =
+            context.dataSourceProfile === "ros1" ? "sensor_msgs/Joy" : "sensor_msgs/msg/Joy";
+
+          if (context.advertise) {
+            context.advertise(config.pubJoyTopic, schemaName);
+          } else {
+            console.warn("Foxglove: advertise() not available - publishing may not work");
+          }
           return config.pubJoyTopic;
         } else {
           if (oldTopic) {
@@ -276,19 +435,18 @@ function JoyPanel({ context }: { context: PanelExtensionContext }): JSX.Element 
           return "";
         }
       });
+    } else {
+      // Clean up advertisement when publish mode is disabled
+      setPubTopic((oldTopic) => {
+        if (oldTopic) {
+          context.unadvertise?.(oldTopic);
+        }
+        return undefined;
+      });
     }
   }, [config.pubJoyTopic, config.publishMode, context]);
 
-  // Publish the joy message
-  useEffect(() => {
-    if (!config.publishMode) {
-      return;
-    }
-
-    if (pubTopic && pubTopic === config.pubJoyTopic) {
-      context.publish?.(pubTopic, joy);
-    }
-  }, [context, config.pubJoyTopic, config.publishMode, joy, pubTopic]);
+  // NOTE: Old useEffect publish removed - now using direct publish in callbacks for low latency
 
   // Invoke the done callback once the render is complete
   useEffect(() => {
@@ -321,13 +479,17 @@ function JoyPanel({ context }: { context: PanelExtensionContext }): JSX.Element 
           frame_id: config.publishFrameId,
           stamp: fromDate(new Date()), // TODO: /clock
         },
-        axes: interactiveJoy.axes,
+        axes: applyDeadzone(interactiveJoy.axes, config.axisDeadzone),
         buttons: interactiveJoy.buttons,
       } as Joy;
 
-      setJoy(tmpJoy);
+      // Direct publish (low latency path)
+      publishJoy(tmpJoy);
+
+      // Update UI (throttled to 10 Hz)
+      updateUI(tmpJoy);
     },
-    [config.publishFrameId, config.dataSource, setJoy],
+    [config.publishFrameId, config.dataSource, config.axisDeadzone, publishJoy, updateUI],
   );
 
   useEffect(() => {
@@ -346,11 +508,7 @@ function JoyPanel({ context }: { context: PanelExtensionContext }): JSX.Element 
       ) : null}
       {config.displayMode === "auto" ? <SimpleButtonView joy={joy} /> : null}
       {config.displayMode === "custom" ? (
-        <GamepadView
-          joy={joy}
-          cbInteractChange={interactiveCb}
-          layoutName={config.layoutName}
-        />
+        <GamepadView joy={joy} cbInteractChange={interactiveCb} layoutName={config.layoutName} />
       ) : null}
       {/* {config.debugGamepad ? <GamepadDebug gamepads={gamepads} /> : null} */}
     </div>
